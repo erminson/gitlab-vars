@@ -184,7 +184,7 @@ func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.V
 	return variable, nil
 }
 
-func (v *VarsAPI) CreateVariable(params types.Params, data types.VarData) (types.Variable, error) {
+func (v *VarsAPI) CreateVariableFromData(params types.Params, data types.VarData) (types.Variable, error) {
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, "")
 	resp, err := v.MakeRequest("POST", endpoint, types.Filter{}, data)
 	if err != nil {
@@ -198,6 +198,10 @@ func (v *VarsAPI) CreateVariable(params types.Params, data types.VarData) (types
 	}
 
 	return variable, nil
+}
+
+func (v *VarsAPI) CreateVariable(params types.Params, variable types.Variable) (types.Variable, error) {
+	return v.CreateVariableFromData(params, variable.VariableToData())
 }
 
 func (v *VarsAPI) UpdateVariable(params types.Params, data types.VarData, filter types.Filter) (types.Variable, error) {
