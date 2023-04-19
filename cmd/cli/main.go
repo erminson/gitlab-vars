@@ -14,27 +14,9 @@ func main() {
 		return
 	}
 
-	//params := types.Params{
-	//	ProjectId: 45202690,
-	//}
-	//vars, err := client.GetVariables(params)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return
-	//}
-	//fmt.Println(vars)
-
 	var projectId int64 = 45202690
 	uc := usecase.NewUseCase(projectId, client)
-
-	//str, err := uc.PrintVariablesToFile()
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return
-	//}
-	//
-	//fmt.Println(str)
-
+	
 	err = uc.ForceLoadVariablesFromFile("/Users/erminson/vars.json")
 	if err != nil {
 		fmt.Println(err)

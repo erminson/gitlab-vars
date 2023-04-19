@@ -72,8 +72,7 @@ func (u *UseCase) ForceLoadVariablesFromFile(filename string) error {
 	params := types.Params{ProjectId: u.projectId}
 	oldVars, err := u.client.GetVariables(params)
 	if err != nil {
-		fmt.Errorf("Getting Error. Params: %v. Filter: %v.", params)
-		return err
+		return fmt.Errorf("getting error. %v. error: %v", params.String(), err)
 	}
 
 	wg := sync.WaitGroup{}

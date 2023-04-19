@@ -38,7 +38,7 @@ func NewVarsAPIWithClient(token, apiEndpoint string, client HTTPClient) (*VarsAP
 		apiEndpointVars: APIEndpointVars,
 	}
 
-	//TODO: Validate token
+	// TODO: Validate token
 	tokenInfo, err := varsAPI.GetSelfToken()
 	if err != nil {
 		return nil, err
