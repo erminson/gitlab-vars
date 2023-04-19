@@ -153,6 +153,11 @@ func (v *VarsAPI) GetSelfToken() (types.Token, error) {
 }
 
 func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
+	err := params.ValidateProjectId()
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
 	resp, err := v.MakeRequest("GET", endpoint, types.Filter{}, types.VarData{})
 	if err != nil {
@@ -169,6 +174,10 @@ func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
 }
 
 func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.Variable, error) {
+	err := params.Validate()
+	if err != nil {
+		return types.Variable{}, err
+	}
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
 	resp, err := v.MakeRequest("GET", endpoint, filter, types.VarData{})
 	if err != nil {
@@ -184,7 +193,17 @@ func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.V
 	return variable, nil
 }
 
-func (v *VarsAPI) CreateVariableFromData(params types.Params, data types.VarData) (types.Variable, error) {
+func (v *VarsAPI) CreateVariableFromVarData(params types.Params, data types.VarData) (types.Variable, error) {
+	err := params.ValidateProjectId()
+	if err != nil {
+		return types.Variable{}, err
+	}
+
+	err = data.Validate()
+	if err != nil {
+		return types.Variable{}, err
+	}
+
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, "")
 	resp, err := v.MakeRequest("POST", endpoint, types.Filter{}, data)
 	if err != nil {
@@ -201,10 +220,20 @@ func (v *VarsAPI) CreateVariableFromData(params types.Params, data types.VarData
 }
 
 func (v *VarsAPI) CreateVariable(params types.Params, variable types.Variable) (types.Variable, error) {
-	return v.CreateVariableFromData(params, variable.VariableToData())
+	return v.CreateVariableFromVarData(params, variable.VariableToData())
 }
 
 func (v *VarsAPI) UpdateVariable(params types.Params, data types.VarData, filter types.Filter) (types.Variable, error) {
+	err := params.Validate()
+	if err != nil {
+		return types.Variable{}, err
+	}
+
+	err = data.Validate()
+	if err != nil {
+		return types.Variable{}, err
+	}
+
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
 	resp, err := v.MakeRequest("PUT", endpoint, filter, data)
 	if err != nil {
@@ -221,8 +250,13 @@ func (v *VarsAPI) UpdateVariable(params types.Params, data types.VarData, filter
 }
 
 func (v *VarsAPI) DeleteVariable(params types.Params, filter types.Filter) error {
+	err := params.Validate()
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	_, err := v.MakeRequest("DELETE", endpoint, filter, types.VarData{})
+	_, err = v.MakeRequest("DELETE", endpoint, filter, types.VarData{})
 
 	return err
 }

@@ -1,6 +1,24 @@
 package types
 
-import "strconv"
+import (
+	"errors"
+	"fmt"
+	"regexp"
+	"strconv"
+)
+
+type VarType string
+
+const (
+	VarTypeEnvVar VarType = "env_var"
+	VarTypeFile   VarType = "file"
+)
+
+var (
+	ErrVarInvalidKey   = errors.New("invalid variable key")
+	ErrVarInvalidValue = errors.New("invalid variable value")
+	ErrVarInvalidType  = errors.New("invalid variable type")
+)
 
 type Variable struct {
 	Type             string `json:"variable_type"`
@@ -10,6 +28,18 @@ type Variable struct {
 	Masked           bool   `json:"masked"`
 	Raw              bool   `json:"raw"`
 	EnvironmentScope string `json:"environment_scope"`
+}
+
+func (v *Variable) String() string {
+	return fmt.Sprintf("Variable { Type:%v, Key:%v, Value:%, Protected:%v, Masked:%v, Raw:%v, EnvironmentScope:%v}",
+		v.Type,
+		v.Key,
+		v.Value,
+		v.Protected,
+		v.Masked,
+		v.Raw,
+		v.EnvironmentScope,
+	)
 }
 
 func (v *Variable) VariableToData() VarData {
@@ -24,4 +54,21 @@ func (v *Variable) VariableToData() VarData {
 	}
 
 	return vd
+}
+
+func (v *Variable) Validate() error {
+	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
+	if v.Key == "" || len(v.Key) > 255 || !re.MatchString(v.Key) {
+		return ErrVarInvalidKey
+	}
+
+	if v.Value == "" {
+		return ErrVarInvalidValue
+	}
+
+	if v.Type != string(VarTypeEnvVar) && v.Type != string(VarTypeFile) {
+		return ErrVarInvalidType
+	}
+
+	return nil
 }

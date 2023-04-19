@@ -85,10 +85,10 @@ func (u *UseCase) ForceLoadVariablesFromFile(filename string) error {
 				ProjectId: u.projectId,
 				Key:       v.Key,
 			}
-			filter := types.Filter{types.FILTER_ENV_SCOPE: v.EnvironmentScope}
+			filter := types.Filter{types.FilterEnvScope: v.EnvironmentScope}
 			err = u.client.DeleteVariable(params, filter)
 			if err != nil {
-				fmt.Errorf("Deleting Error. Params: %v. Filter: %v.", params, filter)
+				fmt.Println(fmt.Errorf("deleting error. %s, %s, error: %v", params.String(), filter.String(), err))
 			}
 		}(v)
 	}
@@ -105,7 +105,7 @@ func (u *UseCase) ForceLoadVariablesFromFile(filename string) error {
 
 			_, err = u.client.CreateVariable(params, v)
 			if err != nil {
-				fmt.Errorf("Creating Error. Params: %v. Variable: %v.", params, v)
+				fmt.Println(fmt.Errorf("creating error. %s, %s, error: %v", params.String(), v.String(), err))
 			}
 		}(v)
 	}
