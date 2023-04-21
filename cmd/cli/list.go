@@ -25,9 +25,6 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var ProjectId int64
-
 func init() {
-	listCmd.PersistentFlags().Int64VarP(&ProjectId, "project", "p", 0, "verbose output")
 	rootCmd.AddCommand(listCmd)
 }

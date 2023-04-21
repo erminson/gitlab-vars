@@ -30,7 +30,7 @@ var addCmd = &cobra.Command{
 			var newVar types.Variable
 			err = json.Unmarshal([]byte(jsonStr), &newVar)
 			if err != nil {
-				fmt.Printf(" #{err}")
+				fmt.Println(fmt.Errorf("not correct json. #{err}"))
 				os.Exit(1)
 			}
 
@@ -49,6 +49,5 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	addCmd.PersistentFlags().Int64VarP(&ProjectId, "project", "p", 0, "verbose output")
 	rootCmd.AddCommand(addCmd)
 }

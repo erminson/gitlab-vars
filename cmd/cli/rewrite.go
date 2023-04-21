@@ -20,9 +20,9 @@ var createCmd = &cobra.Command{
 			return
 		}
 
-		projectID, _ := cmd.Flags().GetInt64("project")
+		projectId, _ := cmd.Flags().GetInt64("project")
 		filename, _ := cmd.Flags().GetString("filename")
-		uc := usecase.NewUseCase(projectID, client)
+		uc := usecase.NewUseCase(projectId, client)
 
 		err = uc.ForceLoadVariablesFromFile(filename)
 		if err != nil {
@@ -32,10 +32,6 @@ var createCmd = &cobra.Command{
 	},
 }
 
-var Filename string
-
 func init() {
-	createCmd.PersistentFlags().Int64VarP(&ProjectId, "project", "p", 0, "Project Id")
-	createCmd.PersistentFlags().StringVarP(&Filename, "filename", "f", "", "Path to file with variables")
 	rootCmd.AddCommand(createCmd)
 }
