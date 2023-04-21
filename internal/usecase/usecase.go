@@ -45,7 +45,7 @@ func (u *UseCase) SaveVariablesToFile(path string) error {
 	return nil
 }
 
-func (u *UseCase) PrintVariablesToFile() (string, error) {
+func (u *UseCase) PrintVariables() (string, error) {
 	params := types.Params{ProjectId: u.projectId}
 	vars, err := u.client.GetVariables(params)
 
@@ -111,6 +111,16 @@ func (u *UseCase) ForceLoadVariablesFromFile(filename string) error {
 	wg.Wait()
 
 	return nil
+}
+
+func (u *UseCase) AddVariable(newVar types.Variable) (types.Variable, error) {
+	err := newVar.Validate()
+	if err != nil {
+		return types.Variable{}, err
+	}
+
+	params := types.Params{ProjectId: u.projectId}
+	return u.client.CreateVariable(params, newVar)
 }
 
 func loadVariablesFromFile(filename string) ([]types.Variable, error) {

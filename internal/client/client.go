@@ -1,4 +1,4 @@
-package glvarsapi
+package varsapi
 
 import (
 	"encoding/json"
