@@ -31,7 +31,7 @@ var addCmd = &cobra.Command{
 			var newVar types.Variable
 			err = json.Unmarshal([]byte(jsonStr), &newVar)
 			if err != nil {
-				fmt.Println(fmt.Errorf("not correct json. #{err}"))
+				fmt.Println(fmt.Errorf("not correct json. error: %v", err))
 				os.Exit(1)
 			}
 
