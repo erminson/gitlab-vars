@@ -10,7 +10,8 @@ import (
 	"strings"
 )
 
-const APIEndpoint = "https://gitlab.com/api/v4/%s"
+const APIHost = "https://gitlab.com"
+const APIEndpoint = "/api/v4/%s"
 const APIEndpointVars = "projects/%d/variables/%s"
 const APIEndpointPersonalTokens = "personal_access_tokens/self"
 
@@ -27,15 +28,19 @@ type VarsAPI struct {
 }
 
 func NewVars(token string) (*VarsAPI, error) {
-	return NewVarsAPIWithClient(token, APIEndpoint, &http.Client{})
+	return NewVarsAPIWithClient(token, APIHost, &http.Client{})
 }
 
-func NewVarsAPIWithClient(token, apiEndpoint string, client HTTPClient) (*VarsAPI, error) {
+func NewVarsWithHost(token, host string) (*VarsAPI, error) {
+	return NewVarsAPIWithClient(token, host, &http.Client{})
+}
+
+func NewVarsAPIWithClient(token, host string, client HTTPClient) (*VarsAPI, error) {
+	apiEndpoint := fmt.Sprintf("%s%s", host, APIEndpoint)
 	varsAPI := &VarsAPI{
-		Token:           token,
-		Client:          client,
-		apiEndpoint:     apiEndpoint,
-		apiEndpointVars: APIEndpointVars,
+		Token:       token,
+		Client:      client,
+		apiEndpoint: apiEndpoint,
 	}
 
 	// TODO: Validate token

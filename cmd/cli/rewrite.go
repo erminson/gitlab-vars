@@ -5,10 +5,11 @@ import (
 	glvarsapi "github.com/erminson/gitlab-vars/internal/client"
 	"github.com/erminson/gitlab-vars/internal/usecase"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 )
 
-var createCmd = &cobra.Command{
+var rewriteCmd = &cobra.Command{
 	Use:     "rewrite",
 	Short:   "Rewrite all variables",
 	Long:    `Rewrite all variables`,
@@ -20,11 +21,10 @@ var createCmd = &cobra.Command{
 			return
 		}
 
-		projectId, _ := cmd.Flags().GetInt64("project")
-		filename, _ := cmd.Flags().GetString("filename")
+		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
 
-		err = uc.ForceLoadVariablesFromFile(filename)
+		err = uc.ForceLoadVariablesFromFile(Filename)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -33,5 +33,5 @@ var createCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(rewriteCmd)
 }

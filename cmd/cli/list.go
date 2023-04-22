@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/erminson/gitlab-vars/internal/usecase"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -12,8 +13,8 @@ var listCmd = &cobra.Command{
 	Short: "Show list of variables",
 	Long:  `Show list of variables`,
 	Run: func(cmd *cobra.Command, args []string) {
-		projectID, _ := cmd.Flags().GetInt64("project")
-		uc := usecase.NewUseCase(projectID, client)
+		projectId := viper.GetInt64("project-id")
+		uc := usecase.NewUseCase(projectId, client)
 
 		vars, err := uc.PrintVariables()
 		if err != nil {
