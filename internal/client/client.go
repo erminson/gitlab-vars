@@ -119,7 +119,9 @@ func buildRawQueryValues(in url.Values, filter types.Filter) string {
 
 	out := in
 	for k, v := range filter {
-		in.Set(fmt.Sprintf("filter[%s]", k), v)
+		if k != "" && v != "" {
+			in.Set(fmt.Sprintf("filter[%s]", k), v)
+		}
 	}
 
 	return out.Encode()

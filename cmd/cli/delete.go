@@ -8,24 +8,28 @@ import (
 	"os"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Show list of variables",
-	Long:  `Show list of variables`,
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "",
+	Long:  "",
+	Args:  cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
+		key := args[0]
+		fmt.Println(key)
+		var envScope string
+		if len(args) > 1 {
+			envScope = args[1]
+		}
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
-
-		vars, err := uc.ListVariables()
+		err := uc.DeleteVariable(key, envScope)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(fmt.Errorf("error: %v", err))
 			os.Exit(1)
 		}
-
-		fmt.Println(vars)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(deleteCmd)
 }

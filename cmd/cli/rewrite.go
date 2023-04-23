@@ -24,7 +24,7 @@ var rewriteCmd = &cobra.Command{
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
 
-		err = uc.ForceLoadVariablesFromFile(Filename)
+		err = uc.ReWriteVariablesFromFile(Filename)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
