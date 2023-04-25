@@ -63,35 +63,35 @@ func TestValidateError(t *testing.T) {
 			v: &Variable{
 				Key: "",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVariableInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. More than 255 characters",
 			v: &Variable{
 				Key: "GVbrPSGqeYyyLaGIM2ehFIWgHdGOHK62eNSyJ7nK6MgdgWJZaZhbbQbdk0C6YqeKInuh8axI8lodhqzGphXkubiWF2pNtiBt3gPRq7BatFi3OLJTVOlLnbegTkao3KCSYq9sYC9Oz9JLAh9kEaUWhmuYbhX1JrlsLMBoEhBxNKUfQHnVOimk4NXY7oWmV7kxnhpmRd2sYoMbWaH20WCONMCj0UdsPgS8SRsyJ5wNnwHR8dLSNubkc3jvLZDKXPwe",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVariableInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use spaces",
 			v: &Variable{
 				Key: " key ",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVariableInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use %",
 			v: &Variable{
 				Key: "key%",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVariableInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use $",
 			v: &Variable{
 				Key: "key$",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVariableInvalidKey,
 		},
 		{
 			name: "Invalid Variable Value.",
@@ -99,7 +99,7 @@ func TestValidateError(t *testing.T) {
 				Key:   "key",
 				Value: "",
 			},
-			expErr: ErrVarInvalidValue,
+			expErr: ErrVariableInvalidValue,
 		},
 		{
 			name: "Invalid Variable Type.",
@@ -108,7 +108,7 @@ func TestValidateError(t *testing.T) {
 				Value: "value",
 				Type:  "not_correct_type",
 			},
-			expErr: ErrVarInvalidType,
+			expErr: ErrVariableInvalidType,
 		},
 	}
 
