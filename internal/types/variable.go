@@ -31,7 +31,7 @@ type Variable struct {
 }
 
 func (v *Variable) String() string {
-	return fmt.Sprintf("Variable { Type:%v, Key:%v, Value:%, Protected:%v, Masked:%v, Raw:%v, EnvironmentScope:%v}",
+	return fmt.Sprintf("Variable { Type:%v, Key:%v, Value:%v, Protected:%v, Masked:%v, Raw:%v, EnvironmentScope:%v}",
 		v.Type,
 		v.Key,
 		v.Value,

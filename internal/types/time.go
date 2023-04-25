@@ -8,28 +8,27 @@ import (
 
 var nilTime = (time.Time{}).UnixNano()
 
-type Time struct {
-	time.Time
-}
+type Time time.Time
 
-func (t *Time) UnmarshalJSON(b []byte) (err error) {
-	s := strings.Trim(string(b), "\"")
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	s := strings.Trim(string(data), "\"")
 	if s == "null" {
-		t.Time = time.Time{}
+		*t = Time(time.Time{})
 		return
 	}
 
-	t.Time, err = time.Parse(time.RFC3339, s)
+	tm, err := time.Parse(time.RFC3339, s)
+	*t = Time(tm)
 
 	return
 }
 
-func (t *Time) MarshalJSON() ([]byte, error) {
-	if t.Time.UnixNano() == nilTime {
+func (t Time) MarshalJSON() ([]byte, error) {
+	if time.Time(t).UnixNano() == nilTime {
 		return []byte("null"), nil
 	}
 
-	return []byte(fmt.Sprintf("\"%s\"", t.Time.Format(time.RFC3339))), nil
+	return []byte(fmt.Sprintf("\"%s\"", time.Time(t).Format(time.RFC3339Nano))), nil
 }
 
 //

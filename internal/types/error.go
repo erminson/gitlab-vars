@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type APIError struct {
 	Message ErrorMessage `json:"message"`
@@ -11,12 +14,11 @@ func (e APIError) Error() string {
 	return fmt.Sprintf("Code: %d Message: %s", e.Code, e.Message)
 }
 
-type ErrorMessage struct {
-	string
-}
+type ErrorMessage string
 
 func (e *ErrorMessage) UnmarshalJSON(b []byte) (err error) {
-	e.string = string(b)
+	msg := strings.Trim(string(b), "\"")
+	*e = ErrorMessage(msg)
 
 	return
 }
