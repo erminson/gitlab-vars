@@ -16,6 +16,9 @@ func TestValidateVarData(t *testing.T) {
 				"variable_type": string(VarTypeEnvVar),
 				"key":           "var_key",
 				"value":         "var_value",
+				"protected":     "true",
+				"masked":        "false",
+				"raw":           "true",
 			},
 		},
 		{
@@ -24,14 +27,18 @@ func TestValidateVarData(t *testing.T) {
 				"variable_type": string(VarTypeFile),
 				"key":           "var_key",
 				"value":         "var_value",
+				"protected":     "false",
+				"masked":        "true",
+				"raw":           "false",
 			},
 		},
 		{
 			name: "Valid VarData #3",
 			v: VarData{
-				"variable_type": string(VarTypeFile),
-				"key":           "var_key123",
-				"value":         "var_value",
+				"variable_type":     string(VarTypeFile),
+				"key":               "var_key123",
+				"value":             "var_value",
+				"environment_scope": "*",
 			},
 		},
 		{
@@ -61,49 +68,49 @@ func TestValidateVarDataError(t *testing.T) {
 		{
 			name:   "Invalid Variable Key. Missing Key",
 			v:      VarData{},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Empty Key",
 			v: VarData{
 				"key": "",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. More than 255 characters",
 			v: VarData{
 				"key": "GVbrPSGqeYyyLaGIM2ehFIWgHdGOHK62eNSyJ7nK6MgdgWJZaZhbbQbdk0C6YqeKInuh8axI8lodhqzGphXkubiWF2pNtiBt3gPRq7BatFi3OLJTVOlLnbegTkao3KCSYq9sYC9Oz9JLAh9kEaUWhmuYbhX1JrlsLMBoEhBxNKUfQHnVOimk4NXY7oWmV7kxnhpmRd2sYoMbWaH20WCONMCj0UdsPgS8SRsyJ5wNnwHR8dLSNubkc3jvLZDKXPwe",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use spaces",
 			v: VarData{
 				"key": " key ",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use %",
 			v: VarData{
 				"key": "key%",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Key. Use $",
 			v: VarData{
 				"key": "key$",
 			},
-			expErr: ErrVarInvalidKey,
+			expErr: ErrVarDataInvalidKey,
 		},
 		{
 			name: "Invalid Variable Value. Missing Value",
 			v: VarData{
 				"key": "key",
 			},
-			expErr: ErrVarInvalidValue,
+			expErr: ErrVarDataInvalidValue,
 		},
 		{
 			name: "Invalid Variable Value. Missing Value",
@@ -111,7 +118,7 @@ func TestValidateVarDataError(t *testing.T) {
 				"key":   "key",
 				"value": "",
 			},
-			expErr: ErrVarInvalidValue,
+			expErr: ErrVarDataInvalidValue,
 		},
 		{
 			name: "Invalid Variable Type. Missing Type",
@@ -119,7 +126,7 @@ func TestValidateVarDataError(t *testing.T) {
 				"key":   "key",
 				"value": "value",
 			},
-			expErr: ErrVarInvalidType,
+			expErr: ErrVarDataInvalidType,
 		},
 		{
 			name: "Invalid Variable Type.",
@@ -128,7 +135,53 @@ func TestValidateVarDataError(t *testing.T) {
 				"value":         "value",
 				"variable_type": "not_correct_type",
 			},
-			expErr: ErrVarInvalidType,
+			expErr: ErrVarDataInvalidType,
+		},
+		{
+			name: "Invalid Variable Protected. abc",
+			v: VarData{
+				"key":           "key",
+				"value":         "value",
+				"variable_type": string(VarTypeFile),
+				"protected":     "abc",
+			},
+			expErr: ErrVarDataInvalidProtected,
+		},
+		{
+			name: "Invalid Variable Masked. abc",
+			v: VarData{
+				"key":           "key",
+				"value":         "value",
+				"variable_type": string(VarTypeFile),
+				"protected":     "true",
+				"masked":        "abc",
+			},
+			expErr: ErrVarDataInvalidMasked,
+		},
+		{
+			name: "Invalid Variable Raw. abc",
+			v: VarData{
+				"key":           "key",
+				"value":         "value",
+				"variable_type": string(VarTypeFile),
+				"protected":     "true",
+				"masked":        "false",
+				"raw":           "abc",
+			},
+			expErr: ErrVarDataInvalidRaw,
+		},
+		{
+			name: "Invalid Variable EnvScope. Empty",
+			v: VarData{
+				"key":               "key",
+				"value":             "value",
+				"variable_type":     string(VarTypeFile),
+				"protected":         "true",
+				"masked":            "false",
+				"raw":               "true",
+				"environment_scope": "",
+			},
+			expErr: ErrVarDataInvalidEnvScope,
 		},
 	}
 
