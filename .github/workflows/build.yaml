@@ -1,0 +1,43 @@
+name: build
+on:
+  push:
+    branches: "*"
+  pull_request:
+    branches: "*"
+
+jobs:
+    build-multiarch:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            targets:
+              - "linux/386 linux/amd64"
+              - "darwin/amd64 darwin/arm64"
+              - "windows/386 windows/amd64"
+        steps:
+          - name: Setup Go environment
+            uses: actions/setup-go@v3
+            with:
+              go-version: '^1.20.3'
+
+          - name: Install gox
+            run: |
+              go install github.com/mitchellh/gox@latest
+
+          - name: Checkout code
+            uses: actions/checkout@v3
+
+          - name: Compile code for ${{ matrix.targets }}
+            env:
+              GOFLAGS: "-trimpath"
+              GOX_ARCH: "${{ matrix.targets }}"
+            run: |
+              mkdir build-output
+              gox -osarch="$GOX_ARCH" -parallel 2 -output "build-output/glvars_{{.OS}}_{{.Arch}}" ./cmd
+          
+          - uses: actions/upload-artifact@v3
+            with:
+              name: "glvars-binaries"
+              path: "build-output/glvars_*"
+              if-no-files-found: error
+              retention-days: 15
