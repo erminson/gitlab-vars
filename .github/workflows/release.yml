@@ -2,9 +2,9 @@ name: release
 
 on:
   push:
-    # run only against tags
+    # run only against tags hat start with 'v'
     tags:
-      - '*'
+      - 'v*'
 
 permissions:
   contents: write
