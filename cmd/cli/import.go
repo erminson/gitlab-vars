@@ -8,7 +8,6 @@ import (
 	"os"
 )
 
-// TODO: Rename to Export
 var importCmd = &cobra.Command{
 	Use:   "import",
 	Short: "Import list of variables (json)",
@@ -17,13 +16,11 @@ var importCmd = &cobra.Command{
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
 
-		vars, err := uc.ListVariables()
+		err := uc.ImportVariablesFromFile(Filename)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		fmt.Println(vars)
 	},
 }
 
