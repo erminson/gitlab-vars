@@ -113,6 +113,75 @@ func (u *UseCase) ReWriteVariablesFromFile(filename string) error {
 	return nil
 }
 
+func (u *UseCase) ImportVariablesFromFile(filename string) error {
+	newVars, err := loadVariablesFromFile(filename)
+	if err != nil {
+		return err
+	}
+
+	err = validateVariables(newVars)
+	if err != nil {
+		return err
+	}
+
+	params := types.Params{ProjectId: u.projectId}
+	exportedVars, err := u.client.GetVariables(params)
+	if err != nil {
+		return err
+	}
+
+	var updateVars []types.Variable
+	var createVars []types.Variable
+	for _, v := range newVars {
+		if containsVariableInSlice(v, exportedVars) {
+			updateVars = append(updateVars, v)
+		} else {
+			createVars = append(createVars, v)
+		}
+	}
+
+	wg := sync.WaitGroup{}
+	for _, v := range updateVars {
+		wg.Add(1)
+		go func(v types.Variable) {
+			defer wg.Done()
+
+			params = types.Params{
+				ProjectId: u.projectId,
+				Key:       v.Key,
+			}
+			filter := types.Filter{
+				types.FilterEnvScope: v.EnvironmentScope,
+			}
+			_, err := u.client.UpdateVariable(params, v, filter)
+			if err != nil {
+				fmt.Println(fmt.Errorf("updating error. %s, %s, %s, error: %v",
+					params.String(), v.String(), filter.String(), err))
+			}
+
+		}(v)
+	}
+	wg.Wait()
+
+	wg = sync.WaitGroup{}
+	for _, v := range createVars {
+		wg.Add(1)
+		go func(v types.Variable) {
+			defer wg.Done()
+			params = types.Params{
+				ProjectId: u.projectId,
+			}
+			_, err := u.client.CreateVariable(params, v)
+			if err != nil {
+				fmt.Println(fmt.Errorf("creating error. %s, %s, error: %v", params.String(), v.String(), err))
+			}
+		}(v)
+	}
+	wg.Wait()
+
+	return nil
+}
+
 func (u *UseCase) AddVariable(newVar types.Variable) (types.Variable, error) {
 	err := newVar.Validate()
 	if err != nil {
@@ -159,4 +228,25 @@ func loadVariablesFromFile(filename string) ([]types.Variable, error) {
 	}
 
 	return variables, nil
+}
+
+func containsVariableInSlice(in types.Variable, vars []types.Variable) bool {
+	for _, v := range vars {
+		if v.Key == in.Key && v.EnvironmentScope == in.EnvironmentScope {
+			return true
+		}
+	}
+
+	return false
+}
+
+func validateVariables(vars []types.Variable) error {
+	for _, v := range vars {
+		err := v.Validate()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

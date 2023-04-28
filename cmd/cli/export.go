@@ -8,22 +8,24 @@ import (
 	"os"
 )
 
-var importCmd = &cobra.Command{
-	Use:   "import",
-	Short: "Import list of variables (json)",
-	Long:  `Import list of variables (json)`,
+var exportCmd = &cobra.Command{
+	Use:   "export",
+	Short: "Export list of variables (json)",
+	Long:  `Export list of variables (json)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
 
-		err := uc.ImportVariablesFromFile(Filename)
+		vars, err := uc.ListVariables()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
+		fmt.Println(vars)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(importCmd)
+	rootCmd.AddCommand(exportCmd)
 }
