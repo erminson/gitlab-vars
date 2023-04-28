@@ -15,9 +15,9 @@ const (
 )
 
 var (
-	ErrVarInvalidKey   = errors.New("invalid variable key")
-	ErrVarInvalidValue = errors.New("invalid variable value")
-	ErrVarInvalidType  = errors.New("invalid variable type")
+	ErrVariableInvalidKey   = errors.New("invalid variable key")
+	ErrVariableInvalidValue = errors.New("invalid variable value")
+	ErrVariableInvalidType  = errors.New("invalid variable type")
 )
 
 type Variable struct {
@@ -31,7 +31,7 @@ type Variable struct {
 }
 
 func (v *Variable) String() string {
-	return fmt.Sprintf("Variable { Type:%v, Key:%v, Value:%, Protected:%v, Masked:%v, Raw:%v, EnvironmentScope:%v}",
+	return fmt.Sprintf("Variable { Type:%v, Key:%v, Value:%v, Protected:%v, Masked:%v, Raw:%v, EnvironmentScope:%v}",
 		v.Type,
 		v.Key,
 		v.Value,
@@ -59,15 +59,15 @@ func (v *Variable) VariableToData() VarData {
 func (v *Variable) Validate() error {
 	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
 	if v.Key == "" || len(v.Key) > 255 || !re.MatchString(v.Key) {
-		return ErrVarInvalidKey
+		return ErrVariableInvalidKey
 	}
 
 	if v.Value == "" {
-		return ErrVarInvalidValue
+		return ErrVariableInvalidValue
 	}
 
 	if v.Type != string(VarTypeEnvVar) && v.Type != string(VarTypeFile) {
-		return ErrVarInvalidType
+		return ErrVariableInvalidType
 	}
 
 	return nil

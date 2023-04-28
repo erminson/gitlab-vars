@@ -45,7 +45,7 @@ func (u *UseCase) SaveVariablesToFile(path string) error {
 	return nil
 }
 
-func (u *UseCase) PrintVariables() (string, error) {
+func (u *UseCase) ListVariables() (string, error) {
 	params := types.Params{ProjectId: u.projectId}
 	vars, err := u.client.GetVariables(params)
 
@@ -61,7 +61,7 @@ func (u *UseCase) PrintVariables() (string, error) {
 	return string(data), nil
 }
 
-func (u *UseCase) ForceLoadVariablesFromFile(filename string) error {
+func (u *UseCase) ReWriteVariablesFromFile(filename string) error {
 	newVars, err := loadVariablesFromFile(filename)
 	if err != nil {
 		return err
@@ -121,6 +121,23 @@ func (u *UseCase) AddVariable(newVar types.Variable) (types.Variable, error) {
 
 	params := types.Params{ProjectId: u.projectId}
 	return u.client.CreateVariable(params, newVar)
+}
+
+func (u *UseCase) DeleteVariable(key, envScope string) error {
+	params := types.Params{
+		ProjectId: u.projectId,
+		Key:       key,
+	}
+
+	filter := types.Filter{
+		types.FilterEnvScope: envScope,
+	}
+	err := u.client.DeleteVariable(params, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func loadVariablesFromFile(filename string) ([]types.Variable, error) {

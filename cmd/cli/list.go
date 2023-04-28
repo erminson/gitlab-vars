@@ -16,7 +16,7 @@ var listCmd = &cobra.Command{
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
 
-		vars, err := uc.PrintVariables()
+		vars, err := uc.ListVariables()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
