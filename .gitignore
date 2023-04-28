@@ -1,2 +1,8 @@
 .env
 .idea/
+
+go_build_github_com_erminson_gitlab_vars_cmd
+glvars
+
+var
+vars.json
