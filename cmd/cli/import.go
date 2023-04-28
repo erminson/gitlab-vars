@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// TODO: Rename to Export
 var importCmd = &cobra.Command{
 	Use:   "import",
 	Short: "Import list of variables (json)",

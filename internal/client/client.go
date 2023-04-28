@@ -230,7 +230,7 @@ func (v *VarsAPI) CreateVariable(params types.Params, variable types.Variable) (
 	return v.CreateVariableFromVarData(params, variable.VariableToData())
 }
 
-func (v *VarsAPI) UpdateVariable(params types.Params, data types.VarData, filter types.Filter) (types.Variable, error) {
+func (v *VarsAPI) UpdateVariableFromVarData(params types.Params, data types.VarData, filter types.Filter) (types.Variable, error) {
 	err := params.Validate()
 	if err != nil {
 		return types.Variable{}, err
@@ -254,6 +254,10 @@ func (v *VarsAPI) UpdateVariable(params types.Params, data types.VarData, filter
 	}
 
 	return variable, nil
+}
+
+func (v *VarsAPI) UpdateVariable(params types.Params, variable types.Variable, filter types.Filter) (types.Variable, error) {
+	return v.UpdateVariableFromVarData(params, variable.VariableToData(), filter)
 }
 
 func (v *VarsAPI) DeleteVariable(params types.Params, filter types.Filter) error {

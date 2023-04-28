@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -69,6 +70,21 @@ func (v *Variable) Validate() error {
 	if v.Type != string(VarTypeEnvVar) && v.Type != string(VarTypeFile) {
 		return ErrVariableInvalidType
 	}
+
+	return nil
+}
+
+func (v *Variable) UnmarshalJSON(b []byte) error {
+	type innerVar Variable
+	out := &innerVar{
+		EnvironmentScope: "*",
+	}
+
+	if err := json.Unmarshal(b, out); err != nil {
+		return err
+	}
+
+	*v = Variable(*out)
 
 	return nil
 }
