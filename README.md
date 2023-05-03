@@ -1,45 +1,65 @@
 # glvars
 ## Description
-`glvars` tool for import and export Gitlab CI/CD variables
+`glvars` CLI tool for import and export project-level Gitlab CI/CD Variables.
 ## Setup
-- Using environment variables: 
+- Using environment variables add your personal access token (`api` scope) and project id (optional): 
  ```bash
-  export GLVARS_PRIVATE_TOKEN="your-gitlab-private-token"
-  export GLVARS_PROJECT_ID=1 # Your gitlab project id
+  export GLVARS_PRIVATE_TOKEN="your-personal-access-token"
+  export GLVARS_PROJECT_ID=278964 # Your gitlab project id
   ```
-- Using config file `.glvars.yaml` (in `$HOME` directory): 
+- Or you can create config file `.glvars.yaml` (in `$HOME` directory): 
 ```bash
+  host: gitlab.example.com # For gitlab server on own domain. By default: https://gitlab.com
   private-token: your-gitlab-private-token
-  project-id: 1
+  project-id: 278964
 ```
-- Using flag `-p` or `--project` to set project id:
+- You also can specify your project id using flag `-p` or `--project`:
 ```bash
-  glvars [command] -p 1
-  glvars [command] --project 1
+  glvars [command] -p 278964
 ```
 ## Use cases and examples
-- Export variables in json forma
+- Export variables in JSON format from project specified in config file or env variable:
 ```bash
   glvars export
 ```
-or
+or you can explicitly specify project id using flag `-p`:   
 ```bash
-  glvars export -p 1
+  glvars export -p 278964
 ```
-- Import variables. To import variables into a project use command `import` with `-f` or `--filename` flag with value path to file with array of variables
+- To import variables into a project use command `import` with `-f` or `--filename` flag with value path to file with array of variables
 ```bash
   glvars import -f ./vars.json
 ```
-  or
-```bash
-  glvars import --filename ./vars.json
+JSON file example:
+```json
+[
+  {
+    "variable_type": "env_var",
+    "key": "MYSQL_HOST",
+    "value": "127.0.0.1",
+    "protected": false,
+    "masked": false,
+    "raw": true,
+    "environment_scope": "production"
+  },
+  {
+    "variable_type": "env_var",
+    "key": "MYSQL_USER",
+    "value": "admin",
+    "protected": false,
+    "masked": false,
+    "raw": true,
+    "environment_scope": "production"
+  }
+]
 ```
 
-## Install
-You can build project from source
+## Installation
+
+Download a binary suitable for your OS at the [release page](https://github.com/erminson/gitlab-vars/releases/latest).
+
+You can build project from source:
+
 ```bash
   go build -o glvars cmd/main.go
-  project-id: 1
 ```
-
-Or download precompiled binaries from [release](https://github.com/erminson/gitlab-vars/actions/workflows/release.yml)
