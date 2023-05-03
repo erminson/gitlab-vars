@@ -10,8 +10,8 @@ import (
 
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "Export list of variables (json)",
-	Long:  `Export list of variables (json)`,
+	Short: "Export list of variables (JSON)",
+	Long:  `Export list of variables (JSON)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		projectId := viper.GetInt64("project-id")
 		uc := usecase.NewUseCase(projectId, client)
