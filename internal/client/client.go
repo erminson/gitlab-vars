@@ -1,6 +1,7 @@
 package varsapi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/erminson/gitlab-vars/internal/types"
@@ -8,12 +9,15 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const APIHost = "https://gitlab.com"
 const APIEndpoint = "/api/v4/%s"
 const APIEndpointVars = "projects/%d/variables/%s"
 const APIEndpointPersonalTokens = "personal_access_tokens/self"
+
+const timeout = time.Second * 3
 
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -55,11 +59,16 @@ func NewVarsAPIWithClient(token, host string, client HTTPClient) (*VarsAPI, erro
 }
 
 func (v *VarsAPI) MakeRequest(method string, endpoint string, filter types.Filter, varData types.VarData) (*types.APIResponse, error) {
+	ctx := context.Background()
+	return v.MakeRequestWithContext(ctx, method, endpoint, filter, varData)
+}
+
+func (v *VarsAPI) MakeRequestWithContext(ctx context.Context, method string, endpoint string, filter types.Filter, varData types.VarData) (*types.APIResponse, error) {
 	uri := fmt.Sprintf(v.apiEndpoint, endpoint)
 
 	values := buildBody(varData)
 
-	req, err := http.NewRequest(method, uri, strings.NewReader(values.Encode()))
+	req, err := http.NewRequestWithContext(ctx, method, uri, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +157,11 @@ func parseAPIError(data []byte, errResp *types.APIError) ([]byte, error) {
 }
 
 func (v *VarsAPI) GetSelfToken() (types.Token, error) {
-	resp, err := v.MakeRequest("GET", APIEndpointPersonalTokens, types.Filter{}, types.VarData{})
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	resp, err := v.MakeRequestWithContext(ctx, "GET", APIEndpointPersonalTokens, types.Filter{}, types.VarData{})
 	if err != nil {
 		return types.Token{}, err
 	}
@@ -160,13 +173,17 @@ func (v *VarsAPI) GetSelfToken() (types.Token, error) {
 }
 
 func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	err := params.ValidateProjectId()
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	resp, err := v.MakeRequest("GET", endpoint, types.Filter{}, types.VarData{})
+	resp, err := v.MakeRequestWithContext(ctx, "GET", endpoint, types.Filter{}, types.VarData{})
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +198,16 @@ func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
 }
 
 func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.Variable, error) {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	err := params.Validate()
 	if err != nil {
 		return types.Variable{}, err
 	}
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	resp, err := v.MakeRequest("GET", endpoint, filter, types.VarData{})
+	resp, err := v.MakeRequestWithContext(ctx, "GET", endpoint, filter, types.VarData{})
 	if err != nil {
 		return types.Variable{}, nil
 	}
@@ -201,6 +222,10 @@ func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.V
 }
 
 func (v *VarsAPI) CreateVariableFromVarData(params types.Params, data types.VarData) (types.Variable, error) {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	err := params.ValidateProjectId()
 	if err != nil {
 		return types.Variable{}, err
@@ -212,7 +237,7 @@ func (v *VarsAPI) CreateVariableFromVarData(params types.Params, data types.VarD
 	}
 
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, "")
-	resp, err := v.MakeRequest("POST", endpoint, types.Filter{}, data)
+	resp, err := v.MakeRequestWithContext(ctx, "POST", endpoint, types.Filter{}, data)
 	if err != nil {
 		return types.Variable{}, err
 	}
@@ -231,6 +256,10 @@ func (v *VarsAPI) CreateVariable(params types.Params, variable types.Variable) (
 }
 
 func (v *VarsAPI) UpdateVariableFromVarData(params types.Params, data types.VarData, filter types.Filter) (types.Variable, error) {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	err := params.Validate()
 	if err != nil {
 		return types.Variable{}, err
@@ -242,7 +271,7 @@ func (v *VarsAPI) UpdateVariableFromVarData(params types.Params, data types.VarD
 	}
 
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	resp, err := v.MakeRequest("PUT", endpoint, filter, data)
+	resp, err := v.MakeRequestWithContext(ctx, "PUT", endpoint, filter, data)
 	if err != nil {
 		return types.Variable{}, err
 	}
@@ -261,13 +290,17 @@ func (v *VarsAPI) UpdateVariable(params types.Params, variable types.Variable, f
 }
 
 func (v *VarsAPI) DeleteVariable(params types.Params, filter types.Filter) error {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	err := params.Validate()
 	if err != nil {
 		return err
 	}
 
 	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	_, err = v.MakeRequest("DELETE", endpoint, filter, types.VarData{})
+	_, err = v.MakeRequestWithContext(ctx, "DELETE", endpoint, filter, types.VarData{})
 
 	return err
 }
