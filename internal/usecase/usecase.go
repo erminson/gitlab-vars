@@ -140,44 +140,38 @@ func (u *UseCase) ImportVariablesFromFile(filename string) error {
 		}
 	}
 
-	wg := sync.WaitGroup{}
-	for _, v := range updateVars {
-		wg.Add(1)
-		go func(v types.Variable) {
-			defer wg.Done()
+	resultUpdate := repeatTasks("Update", updateVars, func(v types.Variable) error {
+		params = types.Params{
+			ProjectId: u.projectId,
+			Key:       v.Key,
+		}
+		filter := types.Filter{
+			types.FilterEnvScope: v.EnvironmentScope,
+		}
+		_, err := u.client.UpdateVariable(params, v, filter)
+		if err != nil {
+			return err
+		}
 
-			params = types.Params{
-				ProjectId: u.projectId,
-				Key:       v.Key,
-			}
-			filter := types.Filter{
-				types.FilterEnvScope: v.EnvironmentScope,
-			}
-			_, err := u.client.UpdateVariable(params, v, filter)
-			if err != nil {
-				fmt.Println(fmt.Errorf("updating error. %s, %s, %s, error: %v",
-					params.String(), v.String(), filter.String(), err))
-			}
+		return nil
+	})
+	fmt.Println(resultUpdate)
 
-		}(v)
-	}
-	wg.Wait()
+	resultCreate := repeatTasks("Create", createVars, func(v types.Variable) error {
+		params = types.Params{
+			ProjectId: u.projectId,
+			Key:       v.Key,
+		}
 
-	wg = sync.WaitGroup{}
-	for _, v := range createVars {
-		wg.Add(1)
-		go func(v types.Variable) {
-			defer wg.Done()
-			params = types.Params{
-				ProjectId: u.projectId,
-			}
-			_, err := u.client.CreateVariable(params, v)
-			if err != nil {
-				fmt.Println(fmt.Errorf("creating error. %s, %s, error: %v", params.String(), v.String(), err))
-			}
-		}(v)
-	}
-	wg.Wait()
+		_, err := u.client.CreateVariable(params, v)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	fmt.Println(resultCreate)
 
 	return nil
 }
@@ -228,6 +222,62 @@ func loadVariablesFromFile(filename string) ([]types.Variable, error) {
 	}
 
 	return variables, nil
+}
+
+func repeatTasks(desc string, vars []types.Variable, task func(v types.Variable) error) types.Result {
+	if len(vars) == 0 {
+		return types.Result{
+			Desc: desc,
+		}
+	}
+
+	acceptChan := make(chan types.Variable, len(vars))
+	failChan := make(chan types.VariableError, len(vars))
+	doneChan := make(chan struct{}, 1)
+	defer close(doneChan)
+	defer close(failChan)
+	defer close(acceptChan)
+
+	for _, v := range vars {
+		go func(v types.Variable) {
+			err := task(v)
+			if err != nil {
+				failChan <- types.VariableError{
+					Var:   v,
+					Error: err,
+				}
+				return
+			}
+
+			acceptChan <- v
+		}(v)
+	}
+
+	acceptedVars := make([]types.Variable, 0)
+	failedVars := make(map[types.Variable]error)
+	counter := 0
+	for {
+		select {
+		case fail := <-failChan:
+			counter++
+			failedVars[fail.Var] = fail.Error
+			if counter >= len(vars) {
+				doneChan <- struct{}{}
+			}
+		case accept := <-acceptChan:
+			counter++
+			acceptedVars = append(acceptedVars, accept)
+			if counter >= len(vars) {
+				doneChan <- struct{}{}
+			}
+		case <-doneChan:
+			return types.Result{
+				Desc:         desc,
+				AcceptedVars: acceptedVars,
+				FailedVars:   failedVars,
+			}
+		}
+	}
 }
 
 func containsVariableInSlice(in types.Variable, vars []types.Variable) bool {
