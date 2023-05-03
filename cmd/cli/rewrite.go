@@ -33,5 +33,5 @@ var rewriteCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(rewriteCmd)
+	//rootCmd.AddCommand(rewriteCmd)
 }

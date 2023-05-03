@@ -21,8 +21,8 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:     "glvars",
-	Short:   "glvars CI/CD variables (Gitlab API)",
-	Long:    `glvars CLI application for working with CI/CD variables (Gitlab API)`,
+	Short:   "glvars CLI tool for import and export project-level Gitlab CI/CD Variables",
+	Long:    `glvars CLI tool for import and export project-level Gitlab CI/CD Variables`,
 	Version: version,
 }
 
@@ -59,7 +59,9 @@ func initClient() {
 
 func init() {
 	cobra.OnInitialize(initConfig, initClient)
-	rootCmd.PersistentFlags().Int64P("project", "p", 0, "Project Id")
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
+	rootCmd.PersistentFlags().Int64P("project", "p", 0, "project id")
 	viper.BindPFlag("project-id", rootCmd.PersistentFlags().Lookup("project"))
 
 	rootCmd.PersistentFlags().StringVarP(&Filename, "filename", "f", "", "path to file with variables")
