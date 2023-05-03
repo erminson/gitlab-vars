@@ -140,7 +140,7 @@ func (u *UseCase) ImportVariablesFromFile(filename string) error {
 		}
 	}
 
-	resultUpdate := repeatTasks("Update", updateVars, func(v types.Variable) error {
+	_ = repeatTasks("Update", updateVars, func(v types.Variable) error {
 		params = types.Params{
 			ProjectId: u.projectId,
 			Key:       v.Key,
@@ -148,6 +148,7 @@ func (u *UseCase) ImportVariablesFromFile(filename string) error {
 		filter := types.Filter{
 			types.FilterEnvScope: v.EnvironmentScope,
 		}
+
 		_, err := u.client.UpdateVariable(params, v, filter)
 		if err != nil {
 			return err
@@ -155,9 +156,8 @@ func (u *UseCase) ImportVariablesFromFile(filename string) error {
 
 		return nil
 	})
-	fmt.Println(resultUpdate)
 
-	resultCreate := repeatTasks("Create", createVars, func(v types.Variable) error {
+	_ = repeatTasks("Create", createVars, func(v types.Variable) error {
 		params = types.Params{
 			ProjectId: u.projectId,
 			Key:       v.Key,
@@ -170,8 +170,6 @@ func (u *UseCase) ImportVariablesFromFile(filename string) error {
 
 		return nil
 	})
-
-	fmt.Println(resultCreate)
 
 	return nil
 }
@@ -231,15 +229,16 @@ func repeatTasks(desc string, vars []types.Variable, task func(v types.Variable)
 		}
 	}
 
-	acceptChan := make(chan types.Variable, len(vars))
-	failChan := make(chan types.VariableError, len(vars))
+	acceptChan := make(chan types.Variable)
+	failChan := make(chan types.VariableError)
 	doneChan := make(chan struct{}, 1)
 	defer close(doneChan)
-	defer close(failChan)
-	defer close(acceptChan)
 
+	wg := sync.WaitGroup{}
 	for _, v := range vars {
+		wg.Add(1)
 		go func(v types.Variable) {
+			defer wg.Done()
 			err := task(v)
 			if err != nil {
 				failChan <- types.VariableError{
@@ -252,6 +251,12 @@ func repeatTasks(desc string, vars []types.Variable, task func(v types.Variable)
 			acceptChan <- v
 		}(v)
 	}
+
+	go func() {
+		wg.Wait()
+		close(failChan)
+		close(acceptChan)
+	}()
 
 	acceptedVars := make([]types.Variable, 0)
 	failedVars := make(map[types.Variable]error)
