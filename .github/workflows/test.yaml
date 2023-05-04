@@ -28,3 +28,9 @@ jobs:
       - name: Test
         run: go test -count=1 -race -coverprofile=coverage.out ./...
 
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with: 
+          files: ./coverage.out
+          verbose: true
+
