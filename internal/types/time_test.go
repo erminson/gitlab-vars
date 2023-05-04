@@ -11,6 +11,7 @@ import (
 func TestUnmarshalTime(t *testing.T) {
 	timeStr := "2023-04-15T14:25:18.085Z"
 	expTime, err := time.Parse(time.RFC3339, timeStr)
+	require.NoError(t, err)
 
 	in := fmt.Sprintf(`{"created_at": "%s"}`, timeStr)
 	var out struct {
@@ -59,7 +60,7 @@ func TestMarshalTime(t *testing.T) {
 
 func TestMarshalTime_Null(t *testing.T) {
 	timeStr := "null"
-	expTimeData := []byte(fmt.Sprintf("%s", timeStr))
+	expTimeData := []byte(timeStr)
 
 	in := Time(time.Time{})
 

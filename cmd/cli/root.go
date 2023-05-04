@@ -62,7 +62,11 @@ func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.PersistentFlags().Int64P("project", "p", 0, "project id")
-	viper.BindPFlag("project-id", rootCmd.PersistentFlags().Lookup("project"))
+	err := viper.BindPFlag("project-id", rootCmd.PersistentFlags().Lookup("project"))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	rootCmd.PersistentFlags().StringVarP(&Filename, "filename", "f", "", "path to file with variables")
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.glvars.yaml)")

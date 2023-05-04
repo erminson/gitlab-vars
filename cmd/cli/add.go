@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// nolint
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "",
