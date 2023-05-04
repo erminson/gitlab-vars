@@ -24,11 +24,10 @@ type HTTPClient interface {
 }
 
 type VarsAPI struct {
-	Token           string
-	Client          HTTPClient
-	apiEndpoint     string
-	apiEndpointVars string
-	tokenInfo       types.Token
+	Token       string
+	Client      HTTPClient
+	apiEndpoint string
+	tokenInfo   types.Token
 }
 
 func NewVars(token string) (*VarsAPI, error) {
@@ -84,12 +83,7 @@ func (v *VarsAPI) MakeRequestWithContext(ctx context.Context, method string, end
 	if err != nil {
 		return nil, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
 
 	var apiResp types.APIResponse
 	_, err = decodeAPIResponse(resp.Body, &apiResp)
@@ -99,7 +93,10 @@ func (v *VarsAPI) MakeRequestWithContext(ctx context.Context, method string, end
 
 	if resp.StatusCode >= 400 && resp.StatusCode <= 499 {
 		var apiErr types.APIError
-		_, err = parseAPIError(apiResp.Result, &apiErr)
+		_, err := parseAPIError(apiResp.Result, &apiErr)
+		if err != nil {
+			return nil, err
+		}
 		apiErr.Code = resp.StatusCode
 
 		return nil, apiErr

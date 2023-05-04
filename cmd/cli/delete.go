@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// nolint
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "",

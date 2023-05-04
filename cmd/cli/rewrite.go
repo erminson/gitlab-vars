@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// nolint
 var rewriteCmd = &cobra.Command{
 	Use:     "rewrite",
 	Short:   "Rewrite all variables",

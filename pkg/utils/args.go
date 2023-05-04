@@ -8,9 +8,7 @@ import (
 
 func ProcessArgs(args []string) string {
 	newArs := make([]string, 0)
-	for _, arg := range args {
-		newArs = append(newArs, arg)
-	}
+	newArs = append(newArs, args...)
 
 	jsonStr := strings.Join(newArs, "")
 	jsonStr = strings.ReplaceAll(jsonStr, " ", "")
