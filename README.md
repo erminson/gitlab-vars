@@ -1,3 +1,9 @@
+[![License: MIT](https://img.shields.io/github/license/erminson/gitlab-vars)](https://github.com/erminson/gitlab-vars/blob/master/LICENSE.md)
+[![Go Report Card](https://goreportcard.com/badge/github.com/erminson/gitlab-vars)](https://goreportcard.com/report/github.com/erminson/gitlab-vars)
+[![Tests](https://github.com/erminson/gitlab-vars/actions/workflows/test.yaml/badge.svg)](https://github.com/erminson/gitlab-vars/actions/workflows/test.yaml)
+[![Codecov](https://codecov.io/github/erminson/gitlab-vars/branch/master/graph/badge.svg?token=MCOD2CJ0T1)](https://codecov.io/github/erminson/gitlab-vars)
+[![Release](https://img.shields.io/github/v/release/erminson/gitlab-vars)](https://github.com/erminson/gitlab-vars/releases/latest)
+
 # glvars
 ## Description
 `glvars` CLI tool for import and export project-level Gitlab CI/CD Variables.
