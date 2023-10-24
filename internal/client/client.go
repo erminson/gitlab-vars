@@ -14,7 +14,7 @@ import (
 
 const APIHost = "https://gitlab.com"
 const APIEndpoint = "/api/v4/%s"
-const APIEndpointVars = "projects/%d/variables/%s"
+const APIEndpointVars = "projects/%d/variables/%s?per_page=100"
 const APIEndpointPersonalTokens = "personal_access_tokens/self"
 
 const timeout = time.Second * 3
