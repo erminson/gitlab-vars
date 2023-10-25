@@ -14,7 +14,7 @@ import (
 
 const APIHost = "https://gitlab.com"
 const APIEndpoint = "/api/v4/%s"
-const APIEndpointVars = "projects/%d/variables/%s?per_page=100"
+const APIEndpointVars = "projects/%d/variables/%s"
 const APIEndpointPersonalTokens = "personal_access_tokens/self"
 
 const timeout = time.Second * 3
@@ -179,7 +179,7 @@ func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
+	endpoint := fmt.Sprintf(APIEndpointVars + "?per_page=100", params.ProjectId, params.Key)
 	resp, err := v.MakeRequestWithContext(ctx, "GET", endpoint, types.Filter{}, types.VarData{})
 	if err != nil {
 		return nil, err
