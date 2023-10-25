@@ -179,7 +179,7 @@ func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
+	endpoint := fmt.Sprintf(APIEndpointVars+"?per_page=100", params.ProjectId, params.Key)
 	resp, err := v.MakeRequestWithContext(ctx, "GET", endpoint, types.Filter{}, types.VarData{})
 	if err != nil {
 		return nil, err
