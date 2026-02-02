@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"log"
 )
 
 type UseCase struct {
@@ -299,8 +300,9 @@ func validateVariables(vars []types.Variable) error {
 	for _, v := range vars {
 		err := v.Validate()
 		if err != nil {
-			return err
-		}
+			log.Printf("skipping variable - %v", err)
+		continue
+	}
 	}
 
 	return nil

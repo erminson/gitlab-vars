@@ -60,15 +60,15 @@ func (v *Variable) VariableToData() VarData {
 func (v *Variable) Validate() error {
 	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
 	if v.Key == "" || len(v.Key) > 255 || !re.MatchString(v.Key) {
-		return ErrVariableInvalidKey
+		return fmt.Errorf("%w: %q", ErrVariableInvalidKey, v.Key)
 	}
 
 	if v.Value == "" {
-		return ErrVariableInvalidValue
+		return fmt.Errorf("%w: %q for env scope %q", ErrVariableInvalidValue, v.Key, v.EnvironmentScope)
 	}
 
 	if v.Type != string(VarTypeEnvVar) && v.Type != string(VarTypeFile) {
-		return ErrVariableInvalidType
+		return fmt.Errorf("%w: %q", ErrVariableInvalidType, v.Key)
 	}
 
 	return nil
