@@ -17,7 +17,7 @@ const (
 
 var (
 	ErrVariableInvalidKey   = errors.New("invalid variable key")
-	ErrVariableInvalidValue = errors.New("invalid variable value")
+	ErrVariableInvalidValue = errors.New("variable value is blank")
 	ErrVariableInvalidType  = errors.New("invalid variable type")
 )
 

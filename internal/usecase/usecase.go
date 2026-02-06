@@ -232,8 +232,6 @@ func repeatTasks(desc string, vars []types.Variable, task func(v types.Variable)
 
 	acceptChan := make(chan types.Variable)
 	failChan := make(chan types.VariableError)
-	doneChan := make(chan struct{}, 1)
-	defer close(doneChan)
 
 	wg := sync.WaitGroup{}
 	for _, v := range vars {
@@ -261,28 +259,27 @@ func repeatTasks(desc string, vars []types.Variable, task func(v types.Variable)
 
 	acceptedVars := make([]types.Variable, 0)
 	failedVars := make(map[types.Variable]error)
-	counter := 0
-	for {
-		select {
-		case fail := <-failChan:
-			counter++
-			failedVars[fail.Var] = fail.Error
-			if counter >= len(vars) {
-				doneChan <- struct{}{}
-			}
-		case accept := <-acceptChan:
-			counter++
-			acceptedVars = append(acceptedVars, accept)
-			if counter >= len(vars) {
-				doneChan <- struct{}{}
-			}
-		case <-doneChan:
-			return types.Result{
-				Desc:         desc,
-				AcceptedVars: acceptedVars,
-				FailedVars:   failedVars,
-			}
+	for failChan != nil || acceptChan != nil {
+	select {
+	case fail, ok := <-failChan:
+		if !ok {
+			failChan = nil
+			continue
 		}
+		failedVars[fail.Var] = fail.Error
+
+	case accept, ok := <-acceptChan:
+		if !ok {
+			acceptChan = nil
+			continue
+		}
+		acceptedVars = append(acceptedVars, accept)
+	}
+	}
+	return types.Result{
+	Desc:         desc,
+	AcceptedVars: acceptedVars,
+	FailedVars:   failedVars,
 	}
 }
 
