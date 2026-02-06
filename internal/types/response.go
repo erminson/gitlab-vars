@@ -1,7 +1,9 @@
 package types
 
-import "encoding/json"
+import "net/http"
 
 type APIResponse struct {
-	Result json.RawMessage
+	Result  []byte
+	Headers http.Header
+	Status  int
 }

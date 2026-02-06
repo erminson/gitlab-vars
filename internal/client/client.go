@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -62,12 +63,24 @@ func (v *VarsAPI) MakeRequest(method string, endpoint string, filter types.Filte
 	return v.MakeRequestWithContext(ctx, method, endpoint, filter, varData)
 }
 
-func (v *VarsAPI) MakeRequestWithContext(ctx context.Context, method string, endpoint string, filter types.Filter, varData types.VarData) (*types.APIResponse, error) {
+func (v *VarsAPI) MakeRequestWithContext(
+	ctx context.Context,
+	method string,
+	endpoint string,
+	filter types.Filter,
+	varData types.VarData,
+) (*types.APIResponse, error) {
+
 	uri := fmt.Sprintf(v.apiEndpoint, endpoint)
 
 	values := buildBody(varData)
 
-	req, err := http.NewRequestWithContext(ctx, method, uri, strings.NewReader(values.Encode()))
+	req, err := http.NewRequestWithContext(
+		ctx,
+		method,
+		uri,
+		strings.NewReader(values.Encode()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -76,29 +89,28 @@ func (v *VarsAPI) MakeRequestWithContext(ctx context.Context, method string, end
 	req.Header.Set("PRIVATE-TOKEN", v.Token)
 
 	q := req.URL.Query()
-	queryValues := buildRawQueryValues(q, filter)
-	req.URL.RawQuery = queryValues
+	req.URL.RawQuery = buildRawQueryValues(q, filter)
 
-	resp, err := v.Client.Do(req)
+	httpResp, err := v.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	var apiResp types.APIResponse
-	_, err = decodeAPIResponse(resp.Body, &apiResp)
+	_, err = decodeAPIResponse(httpResp, &apiResp)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 && resp.StatusCode <= 499 {
+	// Handle client-side errors (GitLab-style)
+	if apiResp.Status >= 400 && apiResp.Status <= 499 {
 		var apiErr types.APIError
-		_, err := parseAPIError(apiResp.Result, &apiErr)
-		if err != nil {
+
+		if _, err := parseAPIError(apiResp.Result, &apiErr); err != nil {
 			return nil, err
 		}
-		apiErr.Code = resp.StatusCode
 
+		apiErr.Code = apiResp.Status
 		return nil, apiErr
 	}
 
@@ -133,13 +145,17 @@ func buildRawQueryValues(in url.Values, filter types.Filter) string {
 	return out.Encode()
 }
 
-func decodeAPIResponse(responseBody io.Reader, resp *types.APIResponse) ([]byte, error) {
-	data, err := io.ReadAll(responseBody)
+func decodeAPIResponse(httpResp *http.Response, resp *types.APIResponse) ([]byte, error) {
+	defer httpResp.Body.Close()
+
+	data, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	resp.Result = data
+	resp.Headers = httpResp.Header
+	resp.Status = httpResp.StatusCode
 
 	return data, nil
 }
@@ -174,24 +190,52 @@ func (v *VarsAPI) GetVariables(params types.Params) ([]types.Variable, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	err := params.ValidateProjectId()
-	if err != nil {
+	if err := params.ValidateProjectId(); err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf(APIEndpointVars, params.ProjectId, params.Key)
-	resp, err := v.MakeRequestWithContext(ctx, "GET", endpoint, types.Filter{}, types.VarData{})
-	if err != nil {
-		return nil, err
+	allVariables := make([]types.Variable, 0)
+	page := 1
+
+	for {
+		endpoint := fmt.Sprintf(
+			APIEndpointVars+"?per_page=100&page=%s",
+			params.ProjectId,
+			params.Key,
+			strconv.Itoa(page),
+		)
+
+		resp, err := v.MakeRequestWithContext(
+			ctx,
+			"GET",
+			endpoint,
+			types.Filter{},
+			types.VarData{},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		var varsPage []types.Variable
+		if err := json.Unmarshal(resp.Result, &varsPage); err != nil {
+			return nil, err
+		}
+
+		allVariables = append(allVariables, varsPage...)
+
+		// GitLab pagination logic
+		nextPage := resp.Headers.Get("X-Next-Page")
+		if nextPage == "" {
+			break
+		}
+
+		page, err = strconv.Atoi(nextPage)
+		if err != nil {
+			return nil, fmt.Errorf("invalid X-Next-Page header: %w", err)
+		}
 	}
 
-	variables := make([]types.Variable, 0)
-	err = json.Unmarshal(resp.Result, &variables)
-	if err != nil {
-		return nil, err
-	}
-
-	return variables, nil
+	return allVariables, nil
 }
 
 func (v *VarsAPI) GetVariable(params types.Params, filter types.Filter) (types.Variable, error) {

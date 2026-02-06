@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	glvarsapi "github.com/erminson/gitlab-vars/internal/client"
+	 glvarsapi "github.com/erminson/gitlab-vars/internal/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -17,6 +17,7 @@ var (
 	ProjectId int64
 	Filename  string
 	cfgFile   string
+	VarKey 	  string
 )
 
 var rootCmd = &cobra.Command{
@@ -48,8 +49,8 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+    fmt.Println("Error loading config file:", err)
 	}
 
 }
@@ -67,6 +68,8 @@ func init() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	rootCmd.PersistentFlags().StringVarP(&VarKey, "key", "k", "", "env variable key")
 
 	rootCmd.PersistentFlags().StringVarP(&Filename, "filename", "f", "", "path to file with variables")
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.glvars.yaml)")
